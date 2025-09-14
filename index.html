@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة المساحات والتحويلات</title>
+    <style>
+        :root {
+            --bg: #0f1724;
+            --card: #0b1220;
+            --text: #f0f4f8;
+            --muted: #cbd5e1;
+            --accent1: #7c3aed;
+            --accent2: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --glass: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.06);
+            --radius: 16px;
+            --shadow: 0 8px 30px rgba(2,6,23,0.6);
+            --transition: all 0.3s ease;
+        }
+
+        .light-mode {
+            --bg: #f0f4f8;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --accent1: #6d28d9;
+            --accent2: #0891b2;
+            --success: #059669;
+            --warning: #d97706;
+            --error: #dc2626;
+            --glass: rgba(0,0,0,0.04);
+            --glass-border: rgba(0,0,0,0.06);
+            --shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", Tahoma, Arial, "Noto Sans Arabic", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            transition: var(--transition);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent1), var(--accent2));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .theme-toggle {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.3);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            transition: var(--transition);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .card-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsed .card-content {
+            max-height: 0;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .chevron {
+            transition: transform 0.3s ease;
+        }
+
+        .collapsed .chevron {
+            transform: rotate(-90deg);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: var(--card);
+            color: var(--text);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent1);
+            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--accent1), var(--accent2));
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--card);
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .result {
+            background: var(--glass);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .shape-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .shape-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: var(--card);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .shape-btn.active {
+            border-color: var(--accent1);
+            background: rgba(124, 58, 237, 0.1);
+        }
+
+        .shape-icon {
+            width: 30px;
+            height: 30px;
+            margin-bottom: 5px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--glass-border);
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 10px;
+            background: var(--success);
+            color: white;
+            box-shadow: var(--shadow);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .unit-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            padding: 8px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        .dua-section {
+            background: var(--glass);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        .dua-text {
+            font-size: 18px;
+            color: var(--accent1);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .dua-meaning {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .shape-selector {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="7" y1="7" x2="17" y2="7"></line>
+                        <line x1="7" y1="12" x2="17" y2="12"></line>
+                        <line x1="7" y1="17" x2="17" y2="17"></line>
+                    </svg>
+                </div>
+                <h1>حاسبة المساحات والتحويلات</h1>
+            </div>
+            <div class="theme-toggle" id="themeToggle">
+                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+                <span>وضع ليلي</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="main-column">
+                <!-- محول الوحدات -->
+                <div class="card">
+                    <div class="card-header" id="converterHeader">
+                        <div class="card-title">
+                            <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="7" y1="12" x2="17" y2="12"></line>
+                                <line x1="10" y1="18" x2="14" y2="18"></line>
+                            </svg>
+                            محول الوحدات الشامل
+                        </div>
+                        <svg class="icon chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label for="value">القيمة</label>
+                            <input type="number" id="value" placeholder="أدخل القيمة" value="280">
+                        </div>
+                        <div class="form-group">
+                            <div style="display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label for="fromUnit">من</label>
+                                    <select id="fromUnit"></select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="toUnit">إلى</label>
+                                    <select id="toUnit"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button class="btn btn-primary" id="convertBtn">
+                                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 3l4 4-4 4"></path>
+                                    <path d="M21 7H7a5 5 0 0 0-5 5v0"></path>
+                                    <path d="M7 21l-4-4 4-4"></path>
+                                    <path d="M3 17h14a5 5 0 0 0 5-5v0"></path>
+                                </svg>
+                                تحويل
+                            </button>
+                            <button class="btn btn-secondary" id="swapBtn">
+                                <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 3l4 4-4 4"></path>
+                                    <path d="M21 7H7a5 5 0 0 0-5 5v0"></path>
+                                    <path d="M7 21l-4-4 4-4"></path>
+                                    <path d="M3 17h14a5 5 0 0 0 5-5v0"></path>
+                                </svg>
+                                تبديل
+                            </button>
+                            <div class="unit-badge">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                </svg>
+                                المتر المربع = 1 m²
+                            </div>
+                        </div>
+                        <div class="result" id="conversionResult">
+                            <div style="text-align: center; color: var(--muted);">النتيجة ستظهر هنا</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- حساب المساحات -->
+                <div class="card">
+                    <div class="card-header" id="shapesHeader">
+                        <div class="card-title">
+                            <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9l6-6 6 6"></path>
+                                <path d="M6 15l6 6 6-6"></path>
+                            </svg>
+                            حساب مساحات الأشكال الهندسية
+                        </div>
+                        <svg class="icon chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <div class="shape-selector">
+                            <div class="shape-btn active" data-shape="square">
+                                <svg class="shape-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                </svg>
+                                <span>مربع</span>
+                            </div>
+                            <div class="shape-btn" data-shape="rectangle">
+                                <svg class="shape-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                </svg>
+                                <span>مستطيل</span>
+                            </div>
+                            <div class="shape-btn" data-shape="triangle">
+                                <svg class="shape-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 22 20 2 20"></polygon>
+                                </svg>
+                                <span>مثلث</span>
+                            </div>
+                            <div class="shape-btn" data-shape="circle">
+                                <svg class="shape-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                </svg>
+                                <span>دائرة</span>
+                            </div>
+                        </div>
+
+                        <div id="shapeInputs">
+                            <div class="form-group">
+                                <label for="side">طول الضلع</label>
+                                <input type="number" id="side" placeholder="أدخل طول الضلع">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" id="calculateArea">
+                            <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            احسب المساحة
+                        </button>
+
+                        <div class="result" id="areaResult">
+                            <div style="text-align: center; color: var(--muted);">النتيجة ستظهر هنا</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <!-- معلومات الوحدات -->
+                <div class="card">
+                    <div class="card-header" id="unitsHeader">
+                        <div class="card-title">
+                            <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12" y2="8"></line>
+                            </svg>
+                            جميع الوحدات المدعومة
+                        </div>
+                        <svg class="icon chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <div id="unitsList">
+                            <!-- سيتم ملؤها بواسطة JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الأذكار -->
+                <div class="card">
+                    <div class="card-header" id="azkarHeader">
+                        <div class="card-title">
+                            <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            أذكار مختصرة
+                        </div>
+                        <svg class="icon chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <div class="dua-section">
+                            <div class="dua-text">سُبْحَانَ اللَّهِ وَبِحَمْدِهِ</div>
+                            <div class="dua-meaning">سبحان الله وبحمده</div>
+                        </div>
+                        <div class="dua-section">
+                            <div class="dua-text">رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ</div>
+                            <div class="dua-meaning">ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة وقنا عذاب النار</div>
+                        </div>
+                        <div class="dua-section">
+                            <div class="dua-text">حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ ۖ عَلَيْهِ تَوَكَّלْتُ ۖ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ</div>
+                            <div class="dua-meaning">حسبي الله لا إله إلا هو عليه توكلت وهو رب العرش العظيم</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- معلومات المطور -->
+                <div class="card">
+                    <div class="card-header" id="developerHeader">
+                        <div class="card-title">
+                            <svg class="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            معلومات المطور
+                        </div>
+                        <svg class="icon chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div class="card-content">
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="font-weight: bold; margin-bottom: 10px;">تم التطوير بواسطة</div>
+                            <div style="color: var(--accent1); font-size: 18px; margin-bottom: 15px;">Eng.shawqi Hasan Al-Gaor</div>
+                            <div style="color: var(--muted); font-size: 14px;">حاسبة متكاملة للتحويل بين وحدات المساحة المختلفة</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            © 2023 حاسبة المساحات والتحويلات | تم التطوير بواسطة Eng.shawqi Hasan Al-Gaor
+        </footer>
+    </div>
+
+    <div class="notification" id="notification">تم النسخ إلى الحافظة</div>
+
+    <script>
+        // وحدات القياس الشاملة (جميعها مرتبطة بالمتر المربع)
+        const units = {
+            // النظام المتري
+            "متر مربع (m²)": 1.0,
+            "كيلومتر مربع (km²)": 1000000,
+            "هكتار (ha)": 10000,
+            "ديسيمتر مربع (dm²)": 0.01,
+            "سنتيمتر مربع (cm²)": 0.0001,
+            "مليمتر مربع (mm²)": 0.000001,
+            
+            // النظام الإمبراطوري
+            "ميل مربع (mi²)": 2589988.11,
+            "فدان (acre)": 4046.86,
+            "ياردة مربعة (yd²)": 0.836127,
+            "قدم مربع (ft²)": 0.092903,
+            "بوصة مربعة (in²)": 0.00064516,
+            
+            // الوحدات اليمنية
+            "اللبنة الصنعاني": 44.44,
+            "اللبنة الذماري": 114.49,
+            "اللبنة العمراني": 64.0,
+            "اللبنة المحويتي": 64.0,
+            "القصبة التعزي (العشاري)": 20.25,
+            "القصبة التعزي (الهدوي)": 29.16,
+            "القصبة الإبي": 56.0,
+            
+            // وحدات عربية
+            "قصبة عربية": 22.5,
+            "قيراط مصري": 175.0,
+            "فدان عثماني": 4000.0,
+            "دنم فلسطيني": 1000.0,
+            "جريب عراقي": 2500.0,
+            
+            // وحدات تاريخية
+            "أكر روماني": 1260.0,
+            "هكتار يوناني": 10000.0,
+            "مورغ برусي": 2553.0,
+            "أكر اسكتلندي": 4850.0
+        };
+
+        // عناصر DOM
+        const themeToggle = document.getElementById('themeToggle');
+        const fromUnitSelect = document.getElementById('fromUnit');
+        const toUnitSelect = document.getElementById('toUnit');
+        const convertBtn = document.getElementById('convertBtn');
+        const swapBtn = document.getElementById('swapBtn');
+        const conversionResult = document.getElementById('conversionResult');
+        const unitsList = document.getElementById('unitsList');
+        const shapeButtons = document.querySelectorAll('.shape-btn');
+        const calculateAreaBtn = document.getElementById('calculateArea');
+        const areaResult = document.getElementById('areaResult');
+        const shapeInputs = document.getElementById('shapeInputs');
+        const notification = document.getElementById('notification');
+        
+        // تهيئة التطبيق
+        function initializeApp() {
+            initializeUnits();
+            setupEventListeners();
+            populateUnitsList();
+            convertUnits(); // تحويل تلقائي عند التحميل
+        }
+        
+        // تهيئة الوحدات في القوائم المنسدلة
+        function initializeUnits() {
+            // إضافة جميع الوحدات إلى القوائم المنسدلة
+            for (const unit in units) {
+                const option1 = document.createElement('option');
+                option1.value = unit;
+                option1.textContent = unit;
+                fromUnitSelect.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = unit;
+                option2.textContent = unit;
+                toUnitSelect.appendChild(option2);
+            }
+            
+            // تعيين القيم الافتراضية (متر مربع إلى قصبة إبي)
+            fromUnitSelect.value = "متر مربع (m²)";
+            toUnitSelect.value = "القصبة الإبي";
+        }
+        
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            themeToggle.addEventListener('click', toggleTheme);
+            convertBtn.addEventListener('click', convertUnits);
+            swapBtn.addEventListener('click', swapUnits);
+            calculateAreaBtn.addEventListener('click', calculateArea);
+            
+            // دعم اختصار Enter في حقل القيمة
+            document.getElementById('value').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') convertUnits();
+            });
+            
+            // جعل الأقسام قابلة للطي
+            document.querySelectorAll('.card-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    header.parentElement.classList.toggle('collapsed');
+                });
+            });
+            
+            // إدارة أشكال الأشكال الهندسية
+            document.querySelectorAll('.shape-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.shape-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    updateShapeInputs(button.dataset.shape);
+                });
+            });
+
+            // تحديث التحويل عند تغيير الوحدات
+            fromUnitSelect.addEventListener('change', convertUnits);
+            toUnitSelect.addEventListener('change', convertUnits);
+        }
+        
+        // تبديل الوضع النهاري/الليلي
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            if (document.body.classList.contains('light-mode')) {
+                themeToggle.querySelector('span').textContent = 'وضع نهاري';
+            } else {
+                themeToggle.querySelector('span').textContent = 'وضع ليلي';
+            }
+        }
+        
+        // تحويل الوحدات
+        function convertUnits() {
+            const value = parseFloat(document.getElementById('value').value);
+            const fromUnit = fromUnitSelect.value;
+            const toUnit = toUnitSelect.value;
+            
+            if (isNaN(value)) {
+                conversionResult.innerHTML = '<div style="color: var(--error);">يرجى إدخال قيمة صحيحة</div>';
+                return;
+            }
+            
+            const result = (value * units[fromUnit]) / units[toUnit];
+            conversionResult.innerHTML = `
+                <div style="text-align: center;">
+                    <div style="font-size: 24px; font-weight: bold; color: var(--accent1);">${result.toFixed(6)}</div>
+                    <div style="color: var(--muted);">${toUnit}</div>
+                    <div style="margin-top: 10px; font-size: 14px;">${value} ${fromUnit} = ${result.toFixed(6)} ${toUnit}</div>
+                </div>
+            `;
+        }
+        
+        // تبديل الوحدات
+        function swapUnits() {
+            const temp = fromUnitSelect.value;
+            fromUnitSelect.value = toUnitSelect.value;
+            toUnitSelect.value = temp;
+            convertUnits();
+        }
+        
+        // تحديث حقول الإدخال حسب الشكل المحدد
+        function updateShapeInputs(shape) {
+            let inputsHTML = '';
+            
+            switch(shape) {
+                case 'square':
+                    inputsHTML = `
+                        <div class="form-group">
+                            <label for="side">طول الضلع</label>
+                            <input type="number" id="side" placeholder="أدخل طول الضلع">
+                        </div>
+                    `;
+                    break;
+                case 'rectangle':
+                    inputsHTML = `
+                        <div class="form-group">
+                            <label for="length">الطول</label>
+                            <input type="number" id="length" placeholder="أدخل الطول">
+                        </div>
+                        <div class="form-group">
+                            <label for="width">العرض</label>
+                            <input type="number" id="width" placeholder="أدخل العرض">
+                        </div>
+                    `;
+                    break;
+                case 'triangle':
+                    inputsHTML = `
+                        <div class="form-group">
+                            <label for="base">القاعدة</label>
+                            <input type="number" id="base" placeholder="أدخل طول القاعدة">
+                        </div>
+                        <div class="form-group">
+                            <label for="height">الارتفاع</label>
+                            <input type="number" id="height" placeholder="أدخل الارتفاع">
+                        </div>
+                    `;
+                    break;
+                case 'circle':
+                    inputsHTML = `
+                        <div class="form-group">
+                            <label for="radius">نصف القطر</label>
+                            <input type="number" id="radius" placeholder="أدخل نصف القطر">
+                        </div>
+                    `;
+                    break;
+            }
+            
+            shapeInputs.innerHTML = inputsHTML;
+        }
+        
+        // حساب مساحة الشكل
+        function calculateArea() {
+            const activeShape = document.querySelector('.shape-btn.active').dataset.shape;
+            let area = 0;
+            let formula = '';
+            let resultText = '';
+            
+            try {
+                switch(activeShape) {
+                    case 'square':
+                        const side = getInputValue('side', 'طول الضلع');
+                        area = side * side;
+                        formula = `مربع = الضلع × الضلع = ${side} × ${side}`;
+                        resultText = `${area.toFixed(4)} متر مربع`;
+                        break;
+                    case 'rectangle':
+                        const length = getInputValue('length', 'الطول');
+                        const width = getInputValue('width', 'العرض');
+                        area = length * width;
+                        formula = `مستطيل = الطول × العرض = ${length} × ${width}`;
+                        resultText = `${area.toFixed(4)} متر مربع`;
+                        break;
+                    case 'triangle':
+                        const base = getInputValue('base', 'القاعدة');
+                        const height = getInputValue('height', 'الارتفاع');
+                        area = 0.5 * base * height;
+                        formula = `مثلث = ½ × القاعدة × الارتفاع = ½ × ${base} × ${height}`;
+                        resultText = `${area.toFixed(4)} متر مربع`;
+                        break;
+                    case 'circle':
+                        const radius = getInputValue('radius', 'نصف القطر');
+                        area = Math.PI * radius * radius;
+                        formula = `دائرة = π × نصف القطر² = 3.1416 × ${radius}²`;
+                        resultText = `${area.toFixed(4)} متر مربع`;
+                        break;
+                }
+                
+                areaResult.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: var(--accent1);">${resultText}</div>
+                        <div style="color: var(--muted); margin-top: 10px;">${formula}</div>
+                    </div>
+                `;
+            } catch (error) {
+                areaResult.innerHTML = `<div style="color: var(--error);">${error.message}</div>`;
+            }
+        }
+        
+        // الحصول على قيمة الإدخال مع التحقق
+        function getInputValue(id, fieldName) {
+            const value = parseFloat(document.getElementById(id).value);
+            if (isNaN(value) || value <= 0) {
+                throw new Error(`يرجى إدخال قيمة صحيحة لـ ${fieldName}`);
+            }
+            return value;
+        }
+        
+        // ملء قائمة الوحدات
+        function populateUnitsList() {
+            let unitsHTML = '';
+            for (const unit in units) {
+                unitsHTML += `
+                    <div style="padding: 10px; border-bottom: 1px solid var(--glass-border);">
+                        <div style="font-weight: bold;">${unit}</div>
+                        <div style="color: var(--muted); font-size: 14px;">${units[unit]} متر مربع</div>
+                    </div>
+                `;
+            }
+            unitsList.innerHTML = unitsHTML;
+        }
+        
+        // إظهار الإشعار
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // تهيئة التطبيق
+        initializeApp();
+    </script>
+</body>
+</html>
